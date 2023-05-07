@@ -1,0 +1,37 @@
+
+server:
+    port: 8080
+
+spring:
+  application:
+      name: ucb-judge-users
+  zipkin:
+    enabled: false
+  sleuth:
+    enabled: false
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8711/eureka
+
+keycloak:
+  auth-server-url: http://localhost:8090
+  autodetect-bearer-only: true
+  credentials:
+    secret: SH6XfTUQkphfEQdfiAmML1bNkE0Gq615
+  realm: ucb-judge
+  resource: backend
+  ssl-required: none
+  use-resource-role-mappings: false
+#  security-constraints:
+#    - auth-roles:
+#        - ADMIN
+#      security-collections:
+#        - name: SERVICIOS DE ADMINISTRADOR DE USUARIOS
+#          patterns:
+#            - /v1/api/users
+#          omitted-methods:
+#            - OPTIONS
+
