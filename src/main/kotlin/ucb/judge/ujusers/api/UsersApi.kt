@@ -2,11 +2,14 @@ package ucb.judge.ujusers.api
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import ucb.judge.ujusers.KeycloakSecurityContextHolder
 import ucb.judge.ujusers.bl.UsersBl
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.dto.ResponseDto
 import ucb.judge.ujusers.dto.KeycloakUserDto
+import ucb.judge.ujusers.exception.UsersException
 
 @RestController
 @RequestMapping("/v1/api/users")
@@ -40,12 +43,25 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseDto(result)
     }
 
+//    @PostMapping("")
+//    fun create(@RequestBody userDto: UserDto): ResponseDto<KeycloakUserDto> {
+//        logger.info("Starting the API call to create user")
+//        val result: KeycloakUserDto = usersBl.create(userDto)
+//        logger.info("Finishing the API call to create user")
+//        return ResponseDto(result)
+//    }
+
     @PutMapping("/{userId}")
     fun update(@PathVariable userId: String,
-               @RequestBody keycloakUserDto: KeycloakUserDto)
+               @RequestBody userDto: UserDto)
     : ResponseDto<KeycloakUserDto> {
         logger.info("Starting the API call to update user info")
-        val result: KeycloakUserDto = usersBl.update(userId, keycloakUserDto)
+        val id = KeycloakSecurityContextHolder.getId()
+        if (id != userId) {
+            logger.error("User $id is not authorized to update user $userId")
+            throw UsersException(HttpStatus.FORBIDDEN, "User $id is not authorized to update user $userId")
+        }
+        val result: KeycloakUserDto = usersBl.update(userId, userDto)
         logger.info("Finishing the API call to update user info")
         return ResponseDto(result)
     }
@@ -55,6 +71,11 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
                       @RequestBody userDto: UserDto)
     : ResponseDto<String> {
         logger.info("Starting the API call to update user password")
+        val id = KeycloakSecurityContextHolder.getId()
+        if (id != userId) {
+            logger.error("User $id is not authorized to update user $userId")
+            throw UsersException(HttpStatus.FORBIDDEN, "User $id is not authorized to update user $userId")
+        }
         usersBl.updatePassword(userId, userDto)
         logger.info("Finishing the API call to update user password")
         return ResponseDto("Password updated")
@@ -66,6 +87,15 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         usersBl.delete(userId)
         logger.info("Finishing the API call to delete user")
         return ResponseDto("User $userId deleted")
+    }
+
+
+    @GetMapping("/group/{groupName}")
+    fun findByGroup(@PathVariable groupName: String): ResponseDto<List<KeycloakUserDto>> {
+        logger.info("Starting the API call to find all users by group")
+        val result: List<KeycloakUserDto> = usersBl.findByGroup(groupName)
+        logger.info("Finishing the API call to find all users by group")
+        return ResponseDto(result)
     }
 
     @PostMapping("/{userId}/group/{groupId}")

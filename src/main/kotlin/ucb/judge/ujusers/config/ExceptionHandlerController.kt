@@ -29,7 +29,7 @@ class ExceptionHandlerController {
             HttpStatus.NOT_FOUND -> "UJ-USERS: 0004"
             else -> "UJ-USERS: UNKNOWN"
         }
-        return ResponseEntity.status(httpStatus).body(ResponseDto(code, keycloakErrorDto.errorDescription))
+        return ResponseEntity.status(httpStatus).body(ResponseDto(code, keycloakErrorDto.errorDescription ?: keycloakErrorDto.error ?: "Unknown error"))
     }
 
     @ExceptionHandler(UsersException::class)

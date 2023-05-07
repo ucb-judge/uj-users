@@ -3,14 +3,15 @@ package ucb.judge.ujusers.bl
 
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.idm.CredentialRepresentation
+import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.dto.KeycloakUserDto
+import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.exception.UsersException
 
 
@@ -61,17 +62,7 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         return convertToUserDto(user)
     }
 
-    fun assignToGroup(userId: String, groupId: String) {
-        logger.info("Starting the BL call to assign user to group")
-        keycloak
-            .realm(realm)
-            .users()
-            .get(userId)
-            .joinGroup(groupId)
-        logger.info("Finishing the BL call to assign user to group")
-    }
-
-    fun update(userId: String, keycloakUserDto: KeycloakUserDto): KeycloakUserDto {
+    fun update(userId: String, userDto: UserDto): KeycloakUserDto {
         logger.info("Starting the BL call to update user info")
         val user: UserRepresentation = keycloak
             .realm(realm)
@@ -79,9 +70,9 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
             .get(userId)
             .toRepresentation()
 
-        user.email = keycloakUserDto.email ?: user.email
-        user.firstName = keycloakUserDto.firstName ?: user.firstName
-        user.lastName = keycloakUserDto.lastName ?: user.lastName
+        user.email = userDto.email ?: user.email
+        user.firstName = userDto.firstName ?: user.firstName
+        user.lastName = userDto.lastName ?: user.lastName
         keycloak
             .realm(realm)
             .users()
@@ -114,6 +105,37 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         logger.info("Finishing the BL call to delete user")
     }
 
+    fun findByGroup(groupName: String): List<KeycloakUserDto> {
+        logger.info("Starting the BL call to find users by group")
+        val groups: List<GroupRepresentation> = keycloak.realm(realm)
+            .groups()
+            .groups()
+            .filter { it.name == groupName }
+
+        if (groups.isEmpty()) {
+            logger.error("Group with name $groupName not found")
+            throw UsersException(HttpStatus.NOT_FOUND, "Group with name $groupName not found")
+        }
+        logger.info("Found group with id ${groups[0].id}")
+
+        val users = keycloak.realm(realm)
+            .groups()
+            .group(groups[0].id)
+            .members()
+
+        logger.info("Found ${users.size} users")
+        logger.info("Finishing the BL call to find users by group")
+        return users.map { convertToUserDto(it) }
+    }
+    fun assignToGroup(userId: String, groupId: String) {
+        logger.info("Starting the BL call to assign user to group")
+        keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .joinGroup(groupId)
+        logger.info("Finishing the BL call to assign user to group")
+    }
 
     fun convertToUserDto(userRepresentation: UserRepresentation): KeycloakUserDto {
         return KeycloakUserDto(

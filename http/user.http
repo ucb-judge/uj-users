@@ -21,8 +21,8 @@ Content-Type: Application/json
 
 {
     "email": "jdoe123@ucb.edu.bo",
-    "firstName": "John",
-    "lastName": "Does"
+    "firstName": "Juan",
+    "lastName": "Doe"
 }
 
 ### Update user's password
@@ -33,4 +33,7 @@ Content-Type: Application/json
   "password": "13DagostoD1969@"
 }
 
+### Group related endpoints
+#### Find users by group
+GET http://localhost:8080/v1/api/users/group/professors
 
