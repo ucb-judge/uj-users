@@ -1,11 +1,11 @@
-package com.ucbjudge.ucbjudgeusers
+package ucb.judge.ujusers
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class UcbJudgeUsersApplication
+class UjUsersApplication
 
 fun main(args: Array<String>) {
-	runApplication<UcbJudgeUsersApplication>(*args)
+	runApplication<UjUsersApplication>(*args)
 }

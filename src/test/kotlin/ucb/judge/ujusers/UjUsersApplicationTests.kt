@@ -1,10 +1,10 @@
-package com.ucbjudge.ucbjudgeusers
+package ucb.judge.ujusers
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class UcbJudgeUsersApplicationTests {
+class UjUsersApplicationTests {
 
 	@Test
 	fun contextLoads() {
