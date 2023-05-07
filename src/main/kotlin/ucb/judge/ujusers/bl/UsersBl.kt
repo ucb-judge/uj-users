@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import ucb.judge.ujusers.dto.UserDto
+import ucb.judge.ujusers.exception.KeycloakServiceException
 import javax.ws.rs.core.Response
 
 
@@ -24,10 +25,20 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
     private val realm: String? = null
 
     fun findAllUsers(): List<UserDto> {
-        val users : List<UserRepresentation> =  keycloak
-            .realm(realm)
-            .users()
-            .list()
+        logger.info("Starting the BL call")
+        val users: List<UserRepresentation>
+        try {
+            users = keycloak
+                .realm(realm)
+                .users()
+                .list()
+        }
+        catch (e: Exception) {
+            logger.error("Error while getting users from Keycloak", e)
+            throw KeycloakServiceException("Error while getting users from Keycloak ${e.message}")
+        }
+        logger.info("Found ${users.size} users")
+        logger.info("Finishing the BL call")
         return users.map { convertToUserDto(it) }
     }
 

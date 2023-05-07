@@ -11,5 +11,4 @@ response_type=code&grant_type=client_credentials&client_id=backend&client_secret
 
 ###
 GET http://localhost:8080/v1/api/users
-Authorization: {{auth-token}}
 
