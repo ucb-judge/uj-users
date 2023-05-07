@@ -2,6 +2,7 @@ package ucb.judge.ujusers.bl
 
 
 import org.keycloak.admin.client.Keycloak
+import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.UserRepresentation
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import ucb.judge.ujusers.dto.UserDto
+import ucb.judge.ujusers.dto.KeycloakUserDto
 import ucb.judge.ujusers.exception.UsersException
 
 
@@ -22,7 +24,7 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
     @Value("\${keycloak.realm}")
     private val realm: String? = null
 
-    fun findAllUsers(): List<UserDto> {
+    fun findAllUsers(): List<KeycloakUserDto> {
         logger.info("Starting the BL call to find all users")
         val users: List<UserRepresentation> = keycloak
                 .realm(realm)
@@ -33,7 +35,7 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         return users.map { convertToUserDto(it) }
     }
 
-    fun findByUsername(username: String): UserDto {
+    fun findByUsername(username: String): KeycloakUserDto {
         logger.info("Starting the BL call to find user by username")
         val user: List<UserRepresentation> = keycloak
                 .realm(realm)
@@ -48,8 +50,73 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         return convertToUserDto(user[0])
     }
 
-    fun convertToUserDto(userRepresentation: UserRepresentation): UserDto {
-        return UserDto(
+    fun findById(id: String): KeycloakUserDto {
+        logger.info("Starting the BL call to find user by username")
+        val user: UserRepresentation = keycloak
+            .realm(realm)
+            .users()
+            .get(id)
+            .toRepresentation()
+        logger.info("Finishing the BL call to find user by username")
+        return convertToUserDto(user)
+    }
+
+    fun assignToGroup(userId: String, groupId: String) {
+        logger.info("Starting the BL call to assign user to group")
+        keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .joinGroup(groupId)
+        logger.info("Finishing the BL call to assign user to group")
+    }
+
+    fun update(userId: String, keycloakUserDto: KeycloakUserDto): KeycloakUserDto {
+        logger.info("Starting the BL call to update user info")
+        val user: UserRepresentation = keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .toRepresentation()
+
+        user.email = keycloakUserDto.email ?: user.email
+        user.firstName = keycloakUserDto.firstName ?: user.firstName
+        user.lastName = keycloakUserDto.lastName ?: user.lastName
+        keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .update(user)
+        logger.info("Finishing the BL call to update user info")
+        return convertToUserDto(user)
+    }
+
+    fun updatePassword(userId: String, userDto: UserDto) {
+        logger.info("Starting the BL call to reset user password")
+        val credentialRepresentation = CredentialRepresentation()
+        credentialRepresentation.isTemporary = false
+        credentialRepresentation.type = CredentialRepresentation.PASSWORD
+        credentialRepresentation.value = userDto.password
+        keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .resetPassword(credentialRepresentation)
+        logger.info("Finishing the BL call to reset user password")
+    }
+
+    fun delete(userId: String) {
+        logger.info("Starting the BL call to delete user")
+        keycloak
+            .realm(realm)
+            .users()
+            .delete(userId)
+        logger.info("Finishing the BL call to delete user")
+    }
+
+
+    fun convertToUserDto(userRepresentation: UserRepresentation): KeycloakUserDto {
+        return KeycloakUserDto(
             userRepresentation.id,
             userRepresentation.username,
             userRepresentation.isEnabled,
