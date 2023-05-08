@@ -12,7 +12,7 @@
 	<artifactId>uj-users</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>uj-users</name>
-	<description>user mangament microservice</description>
+	<description>user management microservice</description>
 	<properties>
 		<java.version>11</java.version>
 		<kotlin.version>1.6.21</kotlin.version>

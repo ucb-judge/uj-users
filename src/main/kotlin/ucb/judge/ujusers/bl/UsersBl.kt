@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service
 import ucb.judge.ujusers.dto.KeycloakUserDto
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.exception.UsersException
-
+import javax.ws.rs.ClientErrorException
+import javax.ws.rs.core.Response
 
 @Service
 class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
@@ -62,6 +63,20 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         return convertToUserDto(user)
     }
 
+    fun createUser(userDto: UserDto,groupName: String) {
+        logger.info("Starting the BL call to create user")
+        val passwordRepresentation = preparePasswordRepresentation(userDto.password)
+        val userRepresentation = prepareUserRepresentation(userDto, passwordRepresentation, groupName)
+
+        val response:Response = keycloak
+            .realm(realm)
+            .users()
+            .create(userRepresentation)
+        if (response.status != 201) {
+            throw ClientErrorException(response)
+        }
+        logger.info("Finishing the BL call to create user")
+    }
     fun update(userId: String, userDto: UserDto): KeycloakUserDto {
         logger.info("Starting the BL call to update user info")
         val user: UserRepresentation = keycloak
@@ -127,15 +142,6 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         logger.info("Finishing the BL call to find users by group")
         return users.map { convertToUserDto(it) }
     }
-    fun assignToGroup(userId: String, groupId: String) {
-        logger.info("Starting the BL call to assign user to group")
-        keycloak
-            .realm(realm)
-            .users()
-            .get(userId)
-            .joinGroup(groupId)
-        logger.info("Finishing the BL call to assign user to group")
-    }
 
     fun convertToUserDto(userRepresentation: UserRepresentation): KeycloakUserDto {
         return KeycloakUserDto(
@@ -147,5 +153,31 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
             userRepresentation.lastName,
             userRepresentation.email,
         )
+    }
+
+    private fun preparePasswordRepresentation(
+        password: String?
+    ): CredentialRepresentation {
+        val credentialRepresentation = CredentialRepresentation()
+        credentialRepresentation.isTemporary = false
+        credentialRepresentation.type = CredentialRepresentation.PASSWORD
+        credentialRepresentation.value = password
+        return credentialRepresentation
+    }
+    private fun prepareUserRepresentation(
+        userDto: UserDto,
+        credentialRepresentation: CredentialRepresentation,
+        groupName: String
+    ): UserRepresentation {
+        val userRepresentation = UserRepresentation()
+        userRepresentation.username = userDto.username
+        userRepresentation.email = userDto.email
+        userRepresentation.isEnabled = true
+        userRepresentation.isEmailVerified = true
+        userRepresentation.firstName = userDto.firstName
+        userRepresentation.lastName = userDto.lastName
+        userRepresentation.credentials = listOf(credentialRepresentation)
+        userRepresentation.groups = listOf(groupName)
+        return userRepresentation
     }
 }

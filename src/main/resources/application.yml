@@ -25,13 +25,13 @@ keycloak:
   resource: backend
   ssl-required: none
   use-resource-role-mappings: false
-#  security-constraints:
-#    - auth-roles:
-#        - ADMIN
-#      security-collections:
-#        - name: SERVICIOS DE ADMINISTRADOR DE USUARIOS
-#          patterns:
-#            - /v1/api/users
-#          omitted-methods:
-#            - OPTIONS
+  security-constraints:
+    - auth-roles:
+        - manage-account
+      security-collections:
+        - name: account
+          patterns:
+            - /v1/api/users
+          omitted-methods:
+            - OPTIONS
 
