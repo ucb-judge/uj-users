@@ -3,34 +3,32 @@ server:
 
 spring:
   application:
-      name: ucb-judge-users
+      name: uj-users
   zipkin:
-    enabled: false
-  sleuth:
-    enabled: false
+    base-url: ${ZIPKIN_SERVER_URI:http://localhost:9411}
 
 eureka:
   client:
     register-with-eureka: true
     service-url:
-      defaultZone: http://localhost:8711/eureka
+      defaultZone: ${EUREKA_SERVER_URI:http://localhost:8761/eureka/}
 
 keycloak:
-  auth-server-url: http://localhost:8090
+  auth-server-url: ${KEYCLOAK_SERVER_URI:http://localhost:8090}
   autodetect-bearer-only: true
   credentials:
-    secret: SH6XfTUQkphfEQdfiAmML1bNkE0Gq615
+    secret: ${KEYCLOAK_CLIENT_SECRET:SH6XfTUQkphfEQdfiAmML1bNkE0Gq615}
   realm: ucb-judge
   resource: backend
   ssl-required: none
   use-resource-role-mappings: false
-  security-constraints:
-    - auth-roles:
-        - manage-account
-      security-collections:
-        - name: account
-          patterns:
-            - /v1/api/users
-          omitted-methods:
-            - OPTIONS
+#  security-constraints:
+#    - auth-roles:
+#        - manage-account
+#      security-collections:
+#        - name: account
+#          patterns:
+#            - /v1/api/users
+#          omitted-methods:
+#            - OPTIONS
 
