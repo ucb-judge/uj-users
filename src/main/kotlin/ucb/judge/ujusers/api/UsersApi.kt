@@ -9,8 +9,6 @@ import ucb.judge.ujusers.dto.ResponseDto
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.utils.KeycloakSecurityContextHolder
 import java.util.*
-import javax.ws.rs.core.Response
-
 
 @RestController
 @RequestMapping("/v1/api/users")
@@ -52,13 +50,13 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseDto("Student user created successfully")
     }
 
-//    @PostMapping("/professor")
-//    fun createProfessor(@RequestBody userDto: UserDto): ResponseDto<KeycloakUserDto> {
-//        logger.info("Starting the API call to create user")
-//        val result: KeycloakUserDto = usersBl.createProfessor(userDto)
-//        logger.info("Finishing the API call to create user")
-//        return ResponseDto(result)
-//    }
+    @PostMapping("/professor")
+    fun createProfessor(@RequestBody userDto: UserDto): ResponseDto<String> {
+        logger.info("Starting the API call to create student user")
+        usersBl.createUser(userDto,"professors")
+        logger.info("Finishing the API call to create student user")
+        return ResponseDto("Professor user created successfully")
+    }
 
     @PutMapping("/{userId}")
     fun update(
@@ -106,7 +104,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         logger.info("Starting the API call to delete user")
         usersBl.delete(userId)
         logger.info("Finishing the API call to delete user")
-        return ResponseDto("User $userId deleted")
+        return ResponseDto("User deleted")
     }
 
     @GetMapping("/group/{groupName}")

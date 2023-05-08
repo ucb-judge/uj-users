@@ -75,6 +75,9 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         if (response.status != 201) {
             throw ClientErrorException(response)
         }
+        val userId = response.location.path.split("/").last()
+        logger.info("User created with id $userId")
+        // TODO: ADD USER_ID TO DATABASE
         logger.info("Finishing the BL call to create user")
     }
     fun update(userId: String, userDto: UserDto): KeycloakUserDto {

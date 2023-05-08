@@ -23,12 +23,23 @@ POST http://localhost:8080/v1/api/users/student
 Content-Type: Application/json
 
 {
-  "username": "jdoe1",
-  "email": "jdoe1@ucb.edu.bo",
+  "username": "jdoe1234",
+  "email": "jdoe1234@ucb.edu.bo",
   "lastName": "Duglas",
-  "password": "123456"
+  "password": "1234567"
 }
 
+### Create professor user
+POST http://localhost:8080/v1/api/users/professor
+Content-Type: Application/json
+
+{
+  "username": "jperez1234",
+  "email": "jperez1234@ucb.edu.bo",
+  "firstName": "Juan",
+  "lastName": "Duglas",
+  "password": "Test123@ucb"
+}
 ### Update user
 PUT http://localhost:8080/v1/api/users/b3b63369-9b6f-4d32-af84-2e7df6a4a6cc
 Content-Type: Application/json
@@ -49,7 +60,7 @@ Content-Type: Application/json
 }
 
 ### Delete user
-DELETE http://localhost:8080/v1/api/users/b3b63369-9b6f-4d32-af84-2e7df6a4a6cc
+DELETE http://localhost:8080/v1/api/users/bf7dec17-b073-45b2-9745-d518fbcbb24e
 
 #### Find users by group
 GET http://localhost:8080/v1/api/users/group/professors
