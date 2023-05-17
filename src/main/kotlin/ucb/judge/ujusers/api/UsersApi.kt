@@ -20,7 +20,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         private val logger = LoggerFactory.getLogger(UsersApi::class.java.name)
     }
 
-    @GetMapping
+    @GetMapping()
     fun findAll():ResponseDto<List<KeycloakUserDto>>{
         logger.info("Starting the API call to find all users")
         val result: List<KeycloakUserDto> = usersBl.findAllUsers()
@@ -28,7 +28,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseDto(result)
     }
 
-    @GetMapping("/username/{username}")
+    @GetMapping("/profile/username/{username}")
     fun findByUsername(@PathVariable username: String): ResponseDto<KeycloakUserDto> {
         logger.info("Starting the API call to find user by id")
         val result: KeycloakUserDto = usersBl.findByUsername(username)
@@ -36,33 +36,12 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseDto(result)
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/profile/{userId}")
     fun findById(@PathVariable userId: String): ResponseDto<KeycloakUserDto> {
         logger.info("Starting the API call to find user by id")
         val result: KeycloakUserDto = usersBl.findById(userId)
         logger.info("Finishing the API call to find user by id")
         return ResponseDto(result)
-    }
-
-    @PostMapping("/student")
-    fun createStudent(@RequestBody userDto: UserDto): ResponseDto<String> {
-        logger.info("Starting the API call to create student user")
-        usersBl.createUser(userDto,"students")
-        logger.info("Finishing the API call to create student user")
-        return ResponseDto("Student user created successfully")
-    }
-
-    /*
-        * This method is used to create a professor user
-        * @param userDto
-        * @return ResponseDto<String>
-     */
-    @PostMapping("/professor")
-    fun createProfessor(@RequestBody userDto: UserDto): ResponseDto<String> {
-        logger.info("Starting the API call to create student user")
-        usersBl.createUser(userDto,"professors")
-        logger.info("Finishing the API call to create student user")
-        return ResponseDto("Professor user created successfully")
     }
 
     /*
@@ -71,7 +50,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
      * @param userDto
      * @return ResponseDto<KeycloakUserDto>
      */
-    @PutMapping("/{userId}")
+    @PutMapping("/profile/{userId}")
     fun update(
         @PathVariable userId: String,
         @RequestBody userDto: UserDto,
@@ -94,7 +73,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
      * @param userDto
      * @return ResponseDto<String>
      */
-    @PutMapping("/{userId}/password")
+    @PutMapping("/profile/{userId}/password")
     fun resetPassword(@PathVariable userId: String,
                       @RequestBody userDto: UserDto
     )
@@ -115,7 +94,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
      * @param userId
      * @return ResponseDto<String>
      */
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/profile/{userId}")
     fun delete(@PathVariable userId: String): ResponseDto<String> {
         logger.info("Starting the API call to delete user")
         val id = KeycloakSecurityContextHolder.getId()
@@ -127,6 +106,33 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         logger.info("Finishing the API call to delete user")
         return ResponseDto("User deleted")
     }
+
+    /*
+        * This method is used to create a student user
+        * @param userDto
+        * @return ResponseDto<String>
+     */
+    @PostMapping("/student")
+    fun createStudent(@RequestBody userDto: UserDto): ResponseDto<String> {
+        logger.info("Starting the API call to create student user")
+        usersBl.createUser(userDto,"students")
+        logger.info("Finishing the API call to create student user")
+        return ResponseDto("Student user created successfully")
+    }
+
+    /*
+        * This method is used to create a professor user
+        * @param userDto
+        * @return ResponseDto<String>
+     */
+    @PostMapping("/professor")
+    fun createProfessor(@RequestBody userDto: UserDto): ResponseDto<String> {
+        logger.info("Starting the API call to create student user")
+        usersBl.createUser(userDto,"professors")
+        logger.info("Finishing the API call to create student user")
+        return ResponseDto("Professor user created successfully")
+    }
+
 
     /*
      * This method is used to find all users by group

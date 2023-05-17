@@ -28,9 +28,17 @@ keycloak:
       security-collections:
         - name: account-settings
           patterns:
-            - /v1/api/users
+            - /v1/api/users/profile/*
           omitted-methods:
-            - GET
-            - POST
+            - OPTIONS
+    - auth-roles:
+        - professor_user
+      security-collections:
+        - name: professor-settings
+          patterns:
+            - /v1/api/users
+            - /v1/api/users/professor
+            - /v1/api/users/group/*
+          omitted-methods:
             - OPTIONS
 

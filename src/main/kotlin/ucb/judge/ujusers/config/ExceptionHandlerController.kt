@@ -27,6 +27,7 @@ class ExceptionHandlerController {
         var httpStatus: HttpStatus = HttpStatus.valueOf(ex.response.status)
         val keycloakError: String = ex.response.readEntity(String::class.java)
         if (keycloakError.contains("errorMessage")){
+            logger.info("Error message: $keycloakError")
             httpStatus = HttpStatus.BAD_REQUEST
             objectMapper.propertyNamingStrategy = com.fasterxml.jackson.databind.PropertyNamingStrategies.LOWER_CAMEL_CASE
         } else {

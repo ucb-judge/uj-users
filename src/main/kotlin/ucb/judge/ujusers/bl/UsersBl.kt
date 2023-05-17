@@ -116,10 +116,17 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
 
     fun delete(userId: String) {
         logger.info("Starting the BL call to delete user")
+        val user: UserRepresentation = keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .toRepresentation()
+        user.isEnabled = false
         keycloak
             .realm(realm)
             .users()
-            .delete(userId)
+            .get(userId)
+            .update(user)
         logger.info("Finishing the BL call to delete user")
     }
 
