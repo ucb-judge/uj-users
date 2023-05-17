@@ -1,5 +1,5 @@
-#FROM eclipse-temurin:11-jdk-alpine
-FROM arm64v8/eclipse-temurin:11-jdk
+FROM eclipse-temurin:11-jdk-alpine
+#FROM arm64v8/eclipse-temurin:11-jdk
 
 EXPOSE 8282
 

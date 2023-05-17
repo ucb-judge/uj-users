@@ -11,24 +11,26 @@ eureka:
   client:
     register-with-eureka: true
     service-url:
-      defaultZone: ${EUREKA_SERVER_URI:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_SERVER_URI:http://localhost:8711/eureka/}
 
 keycloak:
   auth-server-url: ${KEYCLOAK_SERVER_URI:http://localhost:8090}
   autodetect-bearer-only: true
   credentials:
     secret: ${KEYCLOAK_CLIENT_SECRET:SH6XfTUQkphfEQdfiAmML1bNkE0Gq615}
-  realm: ucb-judge
-  resource: backend
+  realm: ${KEYCLOAK_REALM:ucb-judge}
+  resource: ${KEYCLOAK_CLIENT_ID:backend}
   ssl-required: none
   use-resource-role-mappings: false
-#  security-constraints:
-#    - auth-roles:
-#        - manage-account
-#      security-collections:
-#        - name: account
-#          patterns:
-#            - /v1/api/users
-#          omitted-methods:
-#            - OPTIONS
+  security-constraints:
+    - auth-roles:
+        - common_user
+      security-collections:
+        - name: account-settings
+          patterns:
+            - /v1/api/users
+          omitted-methods:
+            - GET
+            - POST
+            - OPTIONS
 

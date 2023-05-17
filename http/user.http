@@ -1,26 +1,29 @@
-## Get Access Token
-#POST http://localhost:8090/realms/ucb-judge/protocol/openid-connect/token
-#Content-Type: application/x-www-form-urlencoded
-#
-#response_type=code&grant_type=client_credentials&client_id=backend&client_secret=SH6XfTUQkphfEQdfiAmML1bNkE0Gq615
-#
-#> {%
-#    client.global.set("auth-token", "Bearer " + response.body["access_token"]);
-#    client.log(client.global.get("auth-token"));
-#%}
+# Get Access Token
+POST http://localhost:8090/realms/ucb-judge/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+response_type=code&grant_type=client_credentials&client_id=backend&client_secret=SH6XfTUQkphfEQdfiAmML1bNkE0Gq615
+
+> {%
+    client.global.set("auth-token", "Bearer " + response.body["access_token"]);
+    client.log(client.global.get("auth-token"));
+%}
 
 ### Get all users
 GET http://localhost:8080/v1/api/users
+Authorization: Bearer {{auth-token}}
 ###
 GET http://localhost:8282/uj-users/v1/api/users
+Authorization: Bearer {{auth-token}}
 ### Get user by username
 GET http://localhost:8080/v1/api/users/username/jdoes
-
+Authorization: Bearer {{auth-token}}
 ### Get user by id
 GET http://localhost:8080/v1/api/users/b3b63369-9b6f-4d32-af84-2e7df6a4a6cc
+Authorization: Bearer {{auth-token}}
 
 ### Create student user
-POST http://localhost:8080/v1/api/users/student
+POST http://localhost:8282/uj-users/v1/api/users/student
 Content-Type: Application/json
 
 {
@@ -33,10 +36,11 @@ Content-Type: Application/json
 ### Create professor user
 POST http://localhost:8080/v1/api/users/professor
 Content-Type: Application/json
+Authorization: Bearer {{auth-token}}
 
 {
-  "username": "jperez1234",
-  "email": "jperez1234@ucb.edu.bo",
+  "username": "professorJuan",
+  "email": "professor@ucb.edu.bo",
   "firstName": "Juan",
   "lastName": "Duglas",
   "password": "Test123@ucb"
@@ -44,7 +48,7 @@ Content-Type: Application/json
 ### Update user
 PUT http://localhost:8080/v1/api/users/b3b63369-9b6f-4d32-af84-2e7df6a4a6cc
 Content-Type: Application/json
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5SVR3ZUR0dDI5ckpLWmwtTGE0SWFtUHJSSFdmS05iamdUUHdBcUY4WXE0In0.eyJleHAiOjE2ODM0OTYxOTIsImlhdCI6MTY4MzQ5NTg5MiwiYXV0aF90aW1lIjoxNjgzNDkzOTA1LCJqdGkiOiIzYmM3ZThjNC05Y2Y3LTRiYWItYjM0Ny03NTAxNzFjNmEwMDYiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwOTAvcmVhbG1zL3VjYi1qdWRnZSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJiM2I2MzM2OS05YjZmLTRkMzItYWY4NC0yZTdkZjZhNGE2Y2MiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJmcm9udGVuZCIsInNlc3Npb25fc3RhdGUiOiJlOWI1MmI1ZS02YTgzLTQyZmQtOWY2Ni05ODgwYjM5ZGNmZWQiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIi8qIiwiaHR0cDovL2xvY2FsaG9zdDo0MjAwIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXVjYi1qdWRnZSIsImluc3RydWN0b3IiLCJvZmZsaW5lX2FjY2VzcyIsImFkbWluIiwidW1hX2F1dGhvcml6YXRpb24iLCJncmFkZXIiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJzaWQiOiJlOWI1MmI1ZS02YTgzLTQyZmQtOWY2Ni05ODgwYjM5ZGNmZWQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ikp1YW4gRG9lcyIsInByZWZlcnJlZF91c2VybmFtZSI6Impkb2UiLCJnaXZlbl9uYW1lIjoiSnVhbiIsImZhbWlseV9uYW1lIjoiRG9lcyIsImVtYWlsIjoiamRvZTEyM0B1Y2IuZWR1LmJvIn0.BSfaW1zbjjf20FaEStb7fA3xp44MCyyI5dlPKUqBA5OpNXvQKFSAdQnkG3uMasZgc6yyxrl4I0qi8aJp-1Vum0GZ5an4fEWJPnIcIA6YTZP8-7MJ4nmd6gD9Z9AkYPvtI-CzgKsVgnnu7CUitvPhWM2eXecAhspvaEz0r5lYsAlEbUZo0J6O0A4TFaK9N0joqBKw6CFL8W-d211qJcBIIjsu5Qu9eEI_qjgZnk9nh0zjA2P_8NIOHeHNtTkUYxtN2lWC_hHElHZr3HR8zoaF-l1100FPTfzehyAQZCvG7cNI0DoU3PnUFnSijOos6Lm0CveV4e3unB2wBVWsHe_giw
+Authorization: Bearer {{auth-token}}
 
 {
     "email": "jdoe123@ucb.edu.bo",
@@ -55,6 +59,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5SVR3ZU
 ### Update user's password
 PUT http://localhost:8080/v1/api/users/b3b63369-9b6f-4d32-af84-2e7df6a4a6cc/password
 Content-Type: Application/json
+Authorization: Bearer {{auth-token}}
 
 {
   "password": "13DagostoD1969 sa"
@@ -62,6 +67,8 @@ Content-Type: Application/json
 
 ### Delete user
 DELETE http://localhost:8080/v1/api/users/bf7dec17-b073-45b2-9745-d518fbcbb24e
+Authorization: Bearer {{auth-token}}
 
 #### Find users by group
 GET http://localhost:8080/v1/api/users/group/professors
+Authorization: Bearer {{auth-token}}
