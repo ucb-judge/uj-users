@@ -1,6 +1,7 @@
 package ucb.judge.ujusers.bl
 
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.GroupRepresentation
@@ -10,14 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import ucb.judge.ujusers.dto.EmailDto
 import ucb.judge.ujusers.dto.KeycloakUserDto
+import ucb.judge.ujusers.dto.NotificationDto
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.exception.UsersException
+import ucb.judge.ujusers.producer.NotificationProducer
+import java.util.*
 import javax.ws.rs.ClientErrorException
 import javax.ws.rs.core.Response
 
 @Service
-class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
+class UsersBl @Autowired constructor(private val keycloak: Keycloak, private val notificationProducer: NotificationProducer) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(UsersBl::class.java.name)
@@ -77,9 +82,24 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         }
         val userId = response.location.path.split("/").last()
         logger.info("User created with id $userId")
+        // sending email
+        logger.info("Sending email to ${userDto.email}")
+        val emailDto = EmailDto(userDto.email!!, "Bienvenido a UCB-JUDGE", "Hola ${userDto.firstName} ${userDto.lastName},\n\n" +
+                "Tu cuenta ha sido creada exitosamente. Para poder ingresar a la plataforma, por favor verifica tu correo electrónico haciendo click en el siguiente enlace:\n\n" +
+                "http://localhost:8080/users/verify/$userId\n\n" +
+                "Si no has creado una cuenta en UCB-JUDGE, por favor ignora este correo.\n\n" +
+                "Saludos,\n" +
+                "El equipo de UCB-JUDGE")
+        val objectMapper = jacksonObjectMapper()
+        val emailString = objectMapper.writeValueAsString(emailDto)
+        val notificationDto = NotificationDto(emailString, "Email", Date())
+        logger.info("Sending Notification")
+        notificationProducer.sendNotification(notificationDto)
+        logger.info("Notification sent")
         // TODO: ADD USER_ID TO DATABASE
         logger.info("Finishing the BL call to create user")
     }
+
     fun update(userId: String, userDto: UserDto): KeycloakUserDto {
         logger.info("Starting the BL call to update user info")
         val user: UserRepresentation = keycloak
@@ -91,6 +111,7 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         user.email = userDto.email ?: user.email
         user.firstName = userDto.firstName ?: user.firstName
         user.lastName = userDto.lastName ?: user.lastName
+        user.requiredActions = listOf("VERIFY_EMAIL")
         keycloak
             .realm(realm)
             .users()
@@ -183,7 +204,7 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak) {
         userRepresentation.username = userDto.username
         userRepresentation.email = userDto.email
         userRepresentation.isEnabled = true
-        userRepresentation.isEmailVerified = true
+        userRepresentation.isEmailVerified = false
         userRepresentation.firstName = userDto.firstName
         userRepresentation.lastName = userDto.lastName
         userRepresentation.credentials = listOf(credentialRepresentation)

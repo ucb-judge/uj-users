@@ -13,7 +13,7 @@ import ucb.judge.ujusers.utils.KeycloakSecurityContextHolder
 import java.util.*
 
 @RestController
-@RequestMapping("/v1/api/users")
+@RequestMapping("/api/v1/users")
 class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
 
     companion object {
@@ -146,5 +146,4 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         logger.info("Finishing the API call to find all users by group")
         return ResponseDto(result)
     }
-
 }

@@ -1,11 +1,17 @@
 server:
-    port: 8080
+  port: 8080
 
 spring:
   application:
-      name: uj-users
+    name: uj-users
   zipkin:
     base-url: ${ZIPKIN_SERVER_URI:http://localhost:9411}
+  rabbitmq:
+    host: sparrow-01.rmq.cloudamqp.com
+    port: 5672
+    username: ${RABBITMQ_USERNAME:itggwiot}
+    password: ${RABBITMQ_PASSWORD:FNAc7QotPFaC73UICw8YedtO6GVSspwD}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:itggwiot}
 
 eureka:
   client:
@@ -28,7 +34,7 @@ keycloak:
       security-collections:
         - name: account-settings
           patterns:
-            - /v1/api/users/profile/*
+            - /api/v1/users/profile/*
           omitted-methods:
             - OPTIONS
     - auth-roles:
@@ -36,9 +42,8 @@ keycloak:
       security-collections:
         - name: professor-settings
           patterns:
-            - /v1/api/users
-            - /v1/api/users/professor
-            - /v1/api/users/group/*
+            - /api/v1/users
+            - /api/v1/users/professor
+            - /api/v1/users/group/*
           omitted-methods:
             - OPTIONS
-
