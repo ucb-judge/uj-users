@@ -7,7 +7,7 @@ spring:
   zipkin:
     base-url: ${ZIPKIN_SERVER_URI:http://localhost:9411}
   rabbitmq:
-    host: sparrow-01.rmq.cloudamqp.com
+    host: ${RABBITMQ_HOST:sparrow-01.rmq.cloudamqp.com}
     port: 5672
     username: ${RABBITMQ_USERNAME:itggwiot}
     password: ${RABBITMQ_PASSWORD:FNAc7QotPFaC73UICw8YedtO6GVSspwD}
