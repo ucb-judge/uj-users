@@ -27,7 +27,7 @@ class ExceptionHandlerController {
         var httpStatus: HttpStatus = HttpStatus.valueOf(ex.response.status)
         val keycloakError: String = ex.response.readEntity(String::class.java)
         if (keycloakError.contains("errorMessage")){
-            logger.info("Error message: $keycloakError")
+            logger.error("Error message: $keycloakError")
             httpStatus = HttpStatus.BAD_REQUEST
             objectMapper.propertyNamingStrategy = com.fasterxml.jackson.databind.PropertyNamingStrategies.LOWER_CAMEL_CASE
         } else {
@@ -53,7 +53,7 @@ class ExceptionHandlerController {
             HttpStatus.NOT_FOUND -> "UJ-USERS: 0004"
             else -> "UJ-USERS: UNKNOWN"
         }
+        logger.error("Error message: ${ex.message}")
         return ResponseEntity.status(ex.httpStatus).body(ResponseDto(code, ex.message!!))
     }
-
 }
