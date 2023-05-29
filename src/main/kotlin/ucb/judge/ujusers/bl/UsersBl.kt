@@ -11,10 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import ucb.judge.ujusers.dao.repository.ProfessorRepository
+import ucb.judge.ujusers.dao.repository.StudentRepository
 import ucb.judge.ujusers.dto.EmailDto
 import ucb.judge.ujusers.dto.KeycloakUserDto
 import ucb.judge.ujusers.dto.NotificationDto
 import ucb.judge.ujusers.dto.UserDto
+import ucb.judge.ujusers.exception.UjNotFoundException
 import ucb.judge.ujusers.exception.UsersException
 import ucb.judge.ujusers.producer.NotificationProducer
 import java.util.*
@@ -22,7 +25,12 @@ import javax.ws.rs.ClientErrorException
 import javax.ws.rs.core.Response
 
 @Service
-class UsersBl @Autowired constructor(private val keycloak: Keycloak, private val notificationProducer: NotificationProducer) {
+class UsersBl @Autowired constructor(
+    private val keycloak: Keycloak,
+    private val notificationProducer: NotificationProducer,
+    private val professorRepository: ProfessorRepository,
+    private val studentRepository: StudentRepository,
+) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(UsersBl::class.java.name)
@@ -210,5 +218,25 @@ class UsersBl @Autowired constructor(private val keycloak: Keycloak, private val
         userRepresentation.credentials = listOf(credentialRepresentation)
         userRepresentation.groups = listOf(groupName)
         return userRepresentation
+    }
+
+    fun getProfessorIdByKcUuid(kcUuid: String): Long {
+        val user = keycloak.realm(realm)
+            .users()
+            .get(kcUuid)
+            .toRepresentation() ?: throw UjNotFoundException("Professor not found")
+        return professorRepository.findByKcUuidAndStatusIsTrue(kcUuid)?.professorId
+            ?: throw UjNotFoundException("Professor not found")
+    }
+
+    fun getStudentIdByKcUuid(kcUuid: String): Long {
+        logger.info("Querying keycloak for user with uuid $kcUuid")
+        keycloak.realm(realm)
+            .users()
+            .get(kcUuid)
+            .toRepresentation() ?: throw UjNotFoundException("Student not found")
+        logger.info("Querying database for student data")
+        return studentRepository.findByKcUuidAndStatusIsTrue(kcUuid)?.studentId
+            ?: throw UjNotFoundException("Student not found")
     }
 }

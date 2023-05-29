@@ -12,6 +12,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import ucb.judge.ujusers.bl.UsersBl
 import ucb.judge.ujusers.dto.KeycloakErrorDto
+import ucb.judge.ujusers.exception.UjNotFoundException
 
 
 @ControllerAdvice
@@ -23,7 +24,7 @@ class ExceptionHandlerController {
     val objectMapper = jacksonObjectMapper()
 
     @ExceptionHandler(ClientErrorException::class)
-    fun handleBadRequestException(ex: ClientErrorException): ResponseEntity<ResponseDto<Nothing>> {
+    fun handleBadRequestException(ex: ClientErrorException): ResponseEntity<ResponseDto<String>> {
         var httpStatus: HttpStatus = HttpStatus.valueOf(ex.response.status)
         val keycloakError: String = ex.response.readEntity(String::class.java)
         if (keycloakError.contains("errorMessage")){
@@ -41,11 +42,15 @@ class ExceptionHandlerController {
             HttpStatus.NOT_FOUND -> "UJ-USERS: 0004"
             else -> "UJ-USERS: UNKNOWN"
         }
-        return ResponseEntity.status(httpStatus).body(ResponseDto(code, keycloakErrorDto.errorDescription ?: keycloakErrorDto.error ?: keycloakErrorDto.errorMessage ?: "Unknown error"))
+        return ResponseEntity(ResponseDto(
+            code,
+            keycloakErrorDto.errorDescription ?: keycloakErrorDto.error ?: keycloakErrorDto.errorMessage ?: "Unknown error",
+            false
+        ), httpStatus)
     }
 
     @ExceptionHandler(UsersException::class)
-    fun handleUJUsersException(ex: UsersException): ResponseEntity<ResponseDto<Nothing>> {
+    fun handleUJUsersException(ex: UsersException): ResponseEntity<ResponseDto<String>> {
         val code = when (ex.httpStatus) {
             HttpStatus.BAD_REQUEST -> "UJ-USERS: 0001"
             HttpStatus.UNAUTHORIZED -> "UJ-USERS: 0002"
@@ -54,6 +59,11 @@ class ExceptionHandlerController {
             else -> "UJ-USERS: UNKNOWN"
         }
         logger.error("Error message: ${ex.message}")
-        return ResponseEntity.status(ex.httpStatus).body(ResponseDto(code, ex.message!!))
+        return ResponseEntity(ResponseDto(code, ex.message!!, false), ex.httpStatus)
+    }
+
+    @ExceptionHandler(UjNotFoundException::class)
+    fun handleUjNotFoundException(ex: UjNotFoundException): ResponseEntity<ResponseDto<Any?>> {
+        return ResponseEntity(ResponseDto(null, ex.message!!, false), HttpStatus.NOT_FOUND)
     }
 }

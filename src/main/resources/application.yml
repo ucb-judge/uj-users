@@ -12,6 +12,14 @@ spring:
     username: ${RABBITMQ_USERNAME:itggwiot}
     password: ${RABBITMQ_PASSWORD:FNAc7QotPFaC73UICw8YedtO6GVSspwD}
     virtual-host: ${RABBITMQ_VIRTUAL_HOST:itggwiot}
+  datasource:
+    type: org.postgresql.jdbc2.optional.SimpleDataSource
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:mysecretpassword}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/db_ucb_judge}
+    jpa:
+      hibernate:
+        ddl-auto: none
 
 eureka:
   client:
