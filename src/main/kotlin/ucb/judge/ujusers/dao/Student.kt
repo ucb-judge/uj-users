@@ -15,4 +15,8 @@ class Student {
 
     @Column(name = "status")
     var status: Boolean = true;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "campus_major_id", nullable = false)
+    var campusMajor: CampusMajor? = null;
 }

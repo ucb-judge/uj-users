@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import ucb.judge.ujusers.dao.Student
+import ucb.judge.ujusers.dao.repository.CampusMajorRepository
 import ucb.judge.ujusers.dao.repository.ProfessorRepository
 import ucb.judge.ujusers.dao.repository.StudentRepository
 import ucb.judge.ujusers.dto.EmailDto
@@ -30,6 +32,7 @@ class UsersBl @Autowired constructor(
     private val notificationProducer: NotificationProducer,
     private val professorRepository: ProfessorRepository,
     private val studentRepository: StudentRepository,
+    private val campusMajorRepository: CampusMajorRepository
 ) {
 
     companion object {
@@ -78,8 +81,16 @@ class UsersBl @Autowired constructor(
 
     fun createUser(userDto: UserDto,groupName: String) {
         logger.info("Starting the BL call to create user")
+        // Input validation
+        validatePasswordPolicy(userDto.password)
+        if (groupName=="students" && userDto.campusMajorId==null) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "CampusMajorId is required")
+        }
+        val campusMajor = campusMajorRepository.findById(userDto.campusMajorId!!).orElseThrow { UjNotFoundException("CampusMajor with id ${userDto.campusMajorId} not found") }
+
         val passwordRepresentation = preparePasswordRepresentation(userDto.password)
         val userRepresentation = prepareUserRepresentation(userDto, passwordRepresentation, groupName)
+        validatePasswordPolicy(userDto.password)
 
         val response:Response = keycloak
             .realm(realm)
@@ -93,7 +104,7 @@ class UsersBl @Autowired constructor(
         // sending email
         logger.info("Sending email to ${userDto.email}")
         val emailDto = EmailDto(userDto.email!!, "Bienvenido a UCB-JUDGE", "Hola ${userDto.firstName} ${userDto.lastName},\n\n" +
-                "Tu cuenta ha sido creada exitosamente. \n\n" +
+                "Tu cuenta de $groupName ha sido creada exitosamente.\n\n" +
                 "Si no has creado una cuenta en UCB-JUDGE, por favor ignora este correo.\n\n" +
                 "Saludos,\n" +
                 "El equipo de UCB-JUDGE")
@@ -103,7 +114,19 @@ class UsersBl @Autowired constructor(
         logger.info("Sending Notification")
         notificationProducer.sendNotification(notificationDto)
         logger.info("Notification sent")
-        // TODO: ADD USER_ID TO DATABASE
+        // Store user in database
+        logger.info("Storing user in database")
+        if (groupName=="students") {
+            val student = Student()
+            student.kcUuid = userId
+            student.campusMajor = campusMajor
+            studentRepository.save(student)
+        } else {
+            val professor = ucb.judge.ujusers.dao.Professor()
+            professor.kcUuid = userId
+            professorRepository.save(professor)
+        }
+        logger.info("User stored in database")
         logger.info("Finishing the BL call to create user")
     }
 
@@ -159,7 +182,23 @@ class UsersBl @Autowired constructor(
             .get(userId)
             .update(user)
         logger.info("Finishing the BL call to delete user")
+        // Delete user from database
+        logger.info("Deleting user from database")
+        val student = studentRepository.findByKcUuidAndStatusIsTrue(userId)
+        if (student != null) {
+            student.status = false
+            studentRepository.save(student)
+            logger.info("Student user deleted from database")
+        } else {
+            val professor = professorRepository.findByKcUuidAndStatusIsTrue(userId)
+            if (professor != null) {
+                professor.status = false
+                professorRepository.save(professor)
+                logger.info("Professor user deleted from database")
+            }
+        }
     }
+
 
     fun findByGroup(groupName: String): List<KeycloakUserDto> {
         logger.info("Starting the BL call to find users by group")
@@ -220,6 +259,32 @@ class UsersBl @Autowired constructor(
         userRepresentation.credentials = listOf(credentialRepresentation)
         userRepresentation.groups = listOf(groupName)
         return userRepresentation
+    }
+
+    private fun validatePasswordPolicy (password: String?){
+        // Check if password is null or empty
+        if (password.isNullOrEmpty()) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Empty password not allowed")
+        }
+        // Check if password has at least 1 special character
+        val regex = Regex("[^A-Za-z0-9 ]")
+        if (!regex.containsMatchIn(password)) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Invalid password: must contain at least 1 special characters.")
+        }
+        // Check if password hast at least 1 uppercase letter
+        val regex2 = Regex("[A-Z]")
+        if (!regex2.containsMatchIn(password)) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Invalid password: must contain at least 1 upper case characters.")
+        }
+        // Check if password has at least 1 lowercase letter
+        val regex3 = Regex("[a-z]")
+        if (!regex3.containsMatchIn(password)) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Invalid password: must contain at least 1 lower case characters.")
+        }
+        // Check if password has length of at least 10 characters
+        if (password.length < 10) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Invalid password: minimum length 10.")
+        }
     }
 
     fun getProfessorIdByKcUuid(kcUuid: String): Long {
