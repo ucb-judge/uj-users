@@ -1,0 +1,4 @@
+### Get all majors
+GET http://localhost:8080/api/v1/majors
+### Get all majors by campus id
+GET http://localhost:8080/api/v1/majors/campus/4

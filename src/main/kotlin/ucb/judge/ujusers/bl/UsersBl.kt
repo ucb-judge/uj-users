@@ -93,8 +93,7 @@ class UsersBl @Autowired constructor(
         // sending email
         logger.info("Sending email to ${userDto.email}")
         val emailDto = EmailDto(userDto.email!!, "Bienvenido a UCB-JUDGE", "Hola ${userDto.firstName} ${userDto.lastName},\n\n" +
-                "Tu cuenta ha sido creada exitosamente. Para poder ingresar a la plataforma, por favor verifica tu correo electrónico haciendo click en el siguiente enlace:\n\n" +
-                "http://localhost:8080/users/verify/$userId\n\n" +
+                "Tu cuenta ha sido creada exitosamente. \n\n" +
                 "Si no has creado una cuenta en UCB-JUDGE, por favor ignora este correo.\n\n" +
                 "Saludos,\n" +
                 "El equipo de UCB-JUDGE")
@@ -119,7 +118,10 @@ class UsersBl @Autowired constructor(
         user.email = userDto.email ?: user.email
         user.firstName = userDto.firstName ?: user.firstName
         user.lastName = userDto.lastName ?: user.lastName
-        user.requiredActions = listOf("VERIFY_EMAIL")
+        // Verify email
+        if (userDto.email != null) {
+            user.requiredActions = listOf("VERIFY_EMAIL")
+        }
         keycloak
             .realm(realm)
             .users()
@@ -221,7 +223,7 @@ class UsersBl @Autowired constructor(
     }
 
     fun getProfessorIdByKcUuid(kcUuid: String): Long {
-        val user = keycloak.realm(realm)
+        keycloak.realm(realm)
             .users()
             .get(kcUuid)
             .toRepresentation() ?: throw UjNotFoundException("Professor not found")

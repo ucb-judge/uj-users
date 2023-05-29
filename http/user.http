@@ -29,11 +29,11 @@ POST http://localhost:8080/api/v1/users/student
 Content-Type: Application/json
 
 {
-  "username": "test12345",
-  "email": "test12345@ucb.edu.bo",
+  "username": "test123454",
+  "email": "test12345@ucb.com",
   "firstName": "Juan",
   "lastName": "Duglas",
-  "password": "13DagostoD1998@"
+  "password": "13agoso"
 }
 ###
 GET http://localhost:8080/api/v1/users/notifications
