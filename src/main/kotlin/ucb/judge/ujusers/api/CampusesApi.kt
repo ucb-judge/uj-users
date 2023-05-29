@@ -37,6 +37,4 @@ class CampusesApi @Autowired constructor(private val campusesBl: CampusesBl) {
         logger.info("Finishing the API call to find all campus by major id")
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
-
-
 }

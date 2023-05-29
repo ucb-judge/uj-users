@@ -4,4 +4,5 @@ import ucb.judge.ujusers.dao.Campus
 
 interface CampusRepository : JpaRepository<Campus, Long> {
     fun findAllByStatusIsTrue(): List<Campus>
+    fun findByCampusIdAndStatusIsTrue(campusId: Long): Campus?
 }
