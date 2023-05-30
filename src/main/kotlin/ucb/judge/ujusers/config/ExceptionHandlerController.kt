@@ -32,6 +32,8 @@ class ExceptionHandlerController {
             httpStatus = HttpStatus.BAD_REQUEST
             objectMapper.propertyNamingStrategy = com.fasterxml.jackson.databind.PropertyNamingStrategies.LOWER_CAMEL_CASE
         } else {
+            logger.error("Error message: $keycloakError")
+            httpStatus = HttpStatus.BAD_REQUEST
             objectMapper.propertyNamingStrategy = com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE
         }
         val keycloakErrorDto: KeycloakErrorDto = objectMapper.readValue(keycloakError)
@@ -41,6 +43,7 @@ class ExceptionHandlerController {
             false
         ), httpStatus)
     }
+
 
     @ExceptionHandler(UsersException::class)
     fun handleUJUsersException(ex: UsersException): ResponseEntity<ResponseDto<Nothing>> {
