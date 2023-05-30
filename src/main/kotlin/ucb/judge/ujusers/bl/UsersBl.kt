@@ -1,7 +1,6 @@
 package ucb.judge.ujusers.bl
 
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.GroupRepresentation
@@ -15,13 +14,10 @@ import ucb.judge.ujusers.dao.Student
 import ucb.judge.ujusers.dao.repository.CampusMajorRepository
 import ucb.judge.ujusers.dao.repository.ProfessorRepository
 import ucb.judge.ujusers.dao.repository.StudentRepository
-import ucb.judge.ujusers.dto.EmailDto
 import ucb.judge.ujusers.dto.KeycloakUserDto
-import ucb.judge.ujusers.dto.NotificationDto
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.exception.UjNotFoundException
 import ucb.judge.ujusers.exception.UsersException
-import ucb.judge.ujusers.producer.NotificationProducer
 import java.util.*
 import javax.ws.rs.ClientErrorException
 import javax.ws.rs.core.Response
@@ -29,7 +25,6 @@ import javax.ws.rs.core.Response
 @Service
 class UsersBl @Autowired constructor(
     private val keycloak: Keycloak,
-    private val notificationProducer: NotificationProducer,
     private val professorRepository: ProfessorRepository,
     private val studentRepository: StudentRepository,
     private val campusMajorRepository: CampusMajorRepository
@@ -100,20 +95,6 @@ class UsersBl @Autowired constructor(
             throw ClientErrorException(response)
         }
         val userId = response.location.path.split("/").last()
-        logger.info("User created with id $userId")
-        // sending email
-        logger.info("Sending email to ${userDto.email}")
-        val emailDto = EmailDto(userDto.email!!, "Bienvenido a UCB-JUDGE", "Hola ${userDto.firstName} ${userDto.lastName},\n\n" +
-                "Tu cuenta de $groupName ha sido creada exitosamente.\n\n" +
-                "Si no has creado una cuenta en UCB-JUDGE, por favor ignora este correo.\n\n" +
-                "Saludos,\n" +
-                "El equipo de UCB-JUDGE")
-        val objectMapper = jacksonObjectMapper()
-        val emailString = objectMapper.writeValueAsString(emailDto)
-        val notificationDto = NotificationDto(emailString, "Email", Date())
-        logger.info("Sending Notification")
-        notificationProducer.sendNotification(notificationDto)
-        logger.info("Notification sent")
         // Store user in database
         logger.info("Storing user in database")
         if (groupName=="students") {
