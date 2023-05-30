@@ -5,13 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import ucb.judge.ujusers.dao.CampusMajor
 import ucb.judge.ujusers.dao.repository.CampusMajorRepository
+import ucb.judge.ujusers.dao.repository.StudentRepository
 import ucb.judge.ujusers.dto.CampusMajorDto
 import ucb.judge.ujusers.exception.UjNotFoundException
 import ucb.judge.ujusers.mappers.CampusMajorMapper
 
 @Controller
 class CampusMajorBl @Autowired constructor(
-    private val campusMajorRepository: CampusMajorRepository
+    private val campusMajorRepository: CampusMajorRepository,
+    private val studentRepository: StudentRepository
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UsersBl::class.java.name)
@@ -27,5 +29,15 @@ class CampusMajorBl @Autowired constructor(
         return campusMajors.map { CampusMajorMapper.entityToDto(it) }
     }
 
+    fun findCampusAndMajorFromKcUuid(kcUuid: String): CampusMajorDto {
+        logger.info("Starting the BL call to find campus and major from kcUuid")
+        val student = studentRepository.findByKcUuidAndStatusIsTrue(kcUuid)
+            ?: throw UjNotFoundException("Student with kcUuid $kcUuid not found")
+
+        val campusMajor: CampusMajor = campusMajorRepository.findByCampusMajorIdAndStatusIsTrue(student.campusMajor!!.campusMajorId)
+            ?: throw UjNotFoundException("CampusMajor with id ${student.campusMajor!!.campusMajorId} not found")
+        logger.info("Found campus and major from kcUuid")
+        return CampusMajorMapper.entityToDto(campusMajor)
+    }
 
 }

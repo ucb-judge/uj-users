@@ -21,6 +21,10 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         private val logger = LoggerFactory.getLogger(UsersApi::class.java.name)
     }
 
+    /**
+     * This method is used to find all users
+     * @return ResponseDto<List<KeycloakUserDto>>
+     */
     @GetMapping()
     fun findAll(): ResponseEntity<ResponseDto<List<KeycloakUserDto>>> {
         logger.info("Starting the API call to find all users")
@@ -28,6 +32,12 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         logger.info("Finishing the API call to find all users")
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
+
+    /**
+     * This method is used to find user by username
+     * @param username
+     * @return ResponseDto<KeycloakUserDto>
+     */
 
     @GetMapping("/profile/username/{username}")
     fun findByUsername(@PathVariable username: String): ResponseEntity<ResponseDto<KeycloakUserDto>> {
@@ -37,6 +47,11 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
 
+    /**
+     * This method is used to find user by id
+     * @param userId
+     * @return ResponseDto<KeycloakUserDto>
+     */
     @GetMapping("/profile/{userId}")
     fun findById(@PathVariable userId: String): ResponseEntity<ResponseDto<KeycloakUserDto>> {
         logger.info("Starting the API call to find user by id")

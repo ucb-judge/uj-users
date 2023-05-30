@@ -1,2 +1,4 @@
 ###
 GET http://localhost:8080/api/v1/campus-majors/campus/1
+###
+GET http://localhost:8080/api/v1/campus-majors/student/90665bd4-34f0-4f1d-b017-ac42f273c1d6

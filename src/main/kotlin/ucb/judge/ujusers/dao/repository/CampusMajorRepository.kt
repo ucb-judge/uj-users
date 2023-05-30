@@ -7,4 +7,6 @@ interface CampusMajorRepository : JpaRepository<CampusMajor, Long> {
     fun findAllByCampusCampusIdAndStatusIsTrue(campusId: Long): List<CampusMajor>
 
     fun findAllByMajorMajorIdAndStatusIsTrue(majorId: Long): List<CampusMajor>
+
+    fun findByCampusMajorIdAndStatusIsTrue(campusMajorId: Long): CampusMajor?
 }
