@@ -170,18 +170,23 @@ class UsersBl @Autowired constructor(
 
     fun delete(userId: String) {
         logger.info("Starting the BL call to delete user")
-        val user: UserRepresentation = keycloak
-            .realm(realm)
-            .users()
-            .get(userId)
-            .toRepresentation()
-        user.isEnabled = false
+//        FIXME: CHANGE FOR LOGICAL DELETE
         keycloak
             .realm(realm)
             .users()
-            .get(userId)
-            .update(user)
-        logger.info("Finishing the BL call to delete user")
+            .delete(userId)
+//        val user: UserRepresentation = keycloak
+//            .realm(realm)
+//            .users()
+//            .get(userId)
+//            .toRepresentation()
+//        println(user.toString())
+//        user.isEnabled = false
+//        keycloak
+//            .realm(realm)
+//            .users()
+//            .get(userId)
+//            .update(user)
         // Delete user from database
         logger.info("Deleting user from database")
         val student = studentRepository.findByKcUuidAndStatusIsTrue(userId)
@@ -197,6 +202,7 @@ class UsersBl @Autowired constructor(
                 logger.info("Professor user deleted from database")
             }
         }
+        logger.info("Finishing the BL call to delete user")
     }
 
 
