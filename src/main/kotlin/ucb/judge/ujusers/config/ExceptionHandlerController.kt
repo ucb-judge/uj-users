@@ -18,7 +18,7 @@ import ucb.judge.ujusers.exception.UjNotFoundException
 @ControllerAdvice
 class ExceptionHandlerController {
     companion object {
-        private val logger = LoggerFactory.getLogger(UsersBl::class.java.name)
+        private val logger = LoggerFactory.getLogger(ExceptionHandlerController::class.java.name)
     }
 
     val objectMapper = jacksonObjectMapper()

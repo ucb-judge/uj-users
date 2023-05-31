@@ -18,6 +18,7 @@ import ucb.judge.ujusers.dto.KeycloakUserDto
 import ucb.judge.ujusers.dto.UserDto
 import ucb.judge.ujusers.exception.UjNotFoundException
 import ucb.judge.ujusers.exception.UsersException
+import ucb.judge.ujusers.utils.KeycloakSecurityContextHolder
 import java.util.*
 import javax.ws.rs.ClientErrorException
 import javax.ws.rs.core.Response
@@ -111,8 +112,9 @@ class UsersBl @Autowired constructor(
         logger.info("Finishing the BL call to create user")
     }
 
-    fun update(userId: String, userDto: UserDto): KeycloakUserDto {
+    fun update(userDto: UserDto): KeycloakUserDto {
         logger.info("Starting the BL call to update user info")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
         val user: UserRepresentation = keycloak
             .realm(realm)
             .users()
@@ -135,8 +137,9 @@ class UsersBl @Autowired constructor(
         return convertToUserDto(user)
     }
 
-    fun updatePassword(userId: String, userDto: UserDto) {
+    fun updatePassword(userDto: UserDto) {
         logger.info("Starting the BL call to reset user password")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
         val credentialRepresentation = CredentialRepresentation()
         credentialRepresentation.isTemporary = false
         credentialRepresentation.type = CredentialRepresentation.PASSWORD
@@ -149,8 +152,9 @@ class UsersBl @Autowired constructor(
         logger.info("Finishing the BL call to reset user password")
     }
 
-    fun delete(userId: String) {
+    fun delete() {
         logger.info("Starting the BL call to delete user")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
 //        FIXME: CHANGE FOR LOGICAL DELETE
         keycloak
             .realm(realm)
@@ -171,17 +175,20 @@ class UsersBl @Autowired constructor(
         // Delete user from database
         logger.info("Deleting user from database")
         val student = studentRepository.findByKcUuidAndStatusIsTrue(userId)
+        student?.let {
+            it.status = false
+            studentRepository.save(it)
+        }
         if (student != null) {
-            student.status = false
-            studentRepository.save(student)
-            logger.info("Student user deleted from database")
-        } else {
-            val professor = professorRepository.findByKcUuidAndStatusIsTrue(userId)
-            if (professor != null) {
-                professor.status = false
-                professorRepository.save(professor)
-                logger.info("Professor user deleted from database")
-            }
+            logger.info("User with id ${student.kcUuid} deleted from database")
+        }
+        val professor = professorRepository.findByKcUuidAndStatusIsTrue(userId)
+        professor?.let {
+            it.status = false
+            professorRepository.save(it)
+        }
+        if (professor != null) {
+            logger.info("User with id ${professor.kcUuid} deleted from database")
         }
         logger.info("Finishing the BL call to delete user")
     }

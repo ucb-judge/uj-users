@@ -12,7 +12,7 @@ class KeycloakSecurityContextHolder {
             return requestAttributes?.request?.getAttribute(KeycloakSecurityContext::class.java.name) as? KeycloakSecurityContext
         }
 
-        fun getId() : String? {
+        fun getSubject() : String? {
             return getKeycloakSecurityContext()?.token?.subject
         }
 

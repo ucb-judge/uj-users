@@ -61,63 +61,38 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to update user info
-     * @param userId
+     * This method is used to update user info, is expected that token is sent in the header
      * @param userDto
      * @return ResponseDto<KeycloakUserDto>
      */
-    @PutMapping("/profile/{userId}")
-    fun update(
-        @PathVariable userId: String,
-        @RequestBody userDto: UserDto,
-    )
-    : ResponseEntity<ResponseDto<KeycloakUserDto>> {
+    @PutMapping("/profile")
+    fun update(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<KeycloakUserDto>> {
         logger.info("Starting the API call to update user info")
-        val id = KeycloakSecurityContextHolder.getId()
-        if (id != userId) {
-            logger.error("User $id is not authorized to update user $userId")
-            throw UsersException(HttpStatus.FORBIDDEN, "User $id is not authorized to update user $userId")
-        }
-        val result: KeycloakUserDto = usersBl.update(userId, userDto)
+        val result: KeycloakUserDto = usersBl.update(userDto)
         logger.info("Finishing the API call to update user info")
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
 
     /**
-     * This method is used to update user password
-     * @param userId
+     * This method is used to update user password, is expected that token is sent in the header
      * @param userDto
      * @return ResponseDto<String>
      */
-    @PutMapping("/profile/{userId}/password")
-    fun resetPassword(@PathVariable userId: String,
-                      @RequestBody userDto: UserDto
-    ) : ResponseEntity<ResponseDto<String>> {
+    @PutMapping("/profile/password")
+    fun resetPassword(@RequestBody userDto: UserDto) : ResponseEntity<ResponseDto<String>> {
         logger.info("Starting the API call to update user password")
-        val id = KeycloakSecurityContextHolder.getId()
-        if (id != userId) {
-            logger.error("User $id is not authorized to update user $userId")
-            throw UsersException(HttpStatus.FORBIDDEN, "User $id is not authorized to update user $userId")
-        }
-        usersBl.updatePassword(userId, userDto)
+        usersBl.updatePassword(userDto)
         logger.info("Finishing the API call to update user password")
         return ResponseEntity.ok(ResponseDto("Password updated","",true))
     }
 
     /**
-     * This method is used to delete a user
-     * @param userId
+     * This method is used to delete a user, is expected that token is sent in the header
      * @return ResponseDto<String>
      */
-    @DeleteMapping("/profile/{userId}")
-    fun delete(@PathVariable userId: String): ResponseEntity<ResponseDto<String>> {
-        logger.info("Starting the API call to delete user")
-        val id = KeycloakSecurityContextHolder.getId()
-        if (id != userId) {
-            logger.error("User $id is not authorized to update user $userId")
-            throw UsersException(HttpStatus.FORBIDDEN, "User $id is not authorized to update user $userId")
-        }
-        usersBl.delete(userId)
+    @DeleteMapping("/profile")
+    fun delete(): ResponseEntity<ResponseDto<String>> {
+        usersBl.delete()
         logger.info("Finishing the API call to delete user")
         return ResponseEntity.ok(ResponseDto("User deleted","", true))
     }
