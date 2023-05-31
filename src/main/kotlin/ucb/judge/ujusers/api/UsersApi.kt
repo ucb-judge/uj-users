@@ -2,15 +2,13 @@ package ucb.judge.ujusers.api
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ucb.judge.ujusers.bl.UsersBl
 import ucb.judge.ujusers.dto.KeycloakUserDto
 import ucb.judge.ujusers.dto.ResponseDto
 import ucb.judge.ujusers.dto.UserDto
-import ucb.judge.ujusers.exception.UsersException
-import ucb.judge.ujusers.utils.KeycloakSecurityContextHolder
+
 import java.util.*
 
 @RestController

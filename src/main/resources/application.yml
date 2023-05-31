@@ -38,6 +38,7 @@ keycloak:
   use-resource-role-mappings: false
   security-constraints:
     - auth-roles:
+        - uj-users-access
         - common_user
       security-collections:
         - name: account-settings

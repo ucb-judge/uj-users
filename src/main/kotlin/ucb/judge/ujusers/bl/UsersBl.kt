@@ -65,13 +65,13 @@ class UsersBl @Autowired constructor(
     }
 
     fun findById(id: String): KeycloakUserDto {
-        logger.info("Starting the BL call to find user by username")
+        logger.info("Starting the BL call to find user by user id")
         val user: UserRepresentation = keycloak
             .realm(realm)
             .users()
             .get(id)
             .toRepresentation()
-        logger.info("Finishing the BL call to find user by username")
+        logger.info("Finishing the BL call to find user by user id")
         return convertToUserDto(user)
     }
 
@@ -114,7 +114,7 @@ class UsersBl @Autowired constructor(
 
     fun update(userDto: UserDto): KeycloakUserDto {
         logger.info("Starting the BL call to update user info")
-        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "User id is required")
         val user: UserRepresentation = keycloak
             .realm(realm)
             .users()
@@ -139,7 +139,7 @@ class UsersBl @Autowired constructor(
 
     fun updatePassword(userDto: UserDto) {
         logger.info("Starting the BL call to reset user password")
-        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "User id is required")
         val credentialRepresentation = CredentialRepresentation()
         credentialRepresentation.isTemporary = false
         credentialRepresentation.type = CredentialRepresentation.PASSWORD
@@ -154,7 +154,7 @@ class UsersBl @Autowired constructor(
 
     fun delete() {
         logger.info("Starting the BL call to delete user")
-        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.BAD_REQUEST, "User id is required")
+        val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "User id is required")
 //        FIXME: CHANGE FOR LOGICAL DELETE
         keycloak
             .realm(realm)
@@ -301,3 +301,4 @@ class UsersBl @Autowired constructor(
             ?: throw UjNotFoundException("Student not found")
     }
 }
+
