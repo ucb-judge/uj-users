@@ -30,7 +30,7 @@ class CampusMajorApi @Autowired constructor(private val campusMajorBl: CampusMaj
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
 
-    @GetMapping("student/{kcUuid}")
+    @GetMapping("/student/{kcUuid}")
     fun findCampusAndMajorFromKcUuid(@PathVariable kcUuid: String): ResponseEntity<ResponseDto<CampusMajorDto>> {
         logger.info("Starting the API call to find campus and major from kcUuid")
         val result: CampusMajorDto = campusMajorBl.findCampusAndMajorFromKcUuid(kcUuid)

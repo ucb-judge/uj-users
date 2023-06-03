@@ -20,6 +20,10 @@ class MajorsApi @Autowired constructor(private val majorsBl: MajorsBl) {
     companion object {
         private val logger = LoggerFactory.getLogger(UsersApi::class.java.name)
     }
+    /**
+     * This method is used to find all majors, no role is required
+     * @return ResponseDto<List<MajorDto>>
+     */
     @GetMapping()
     fun findAll(): ResponseEntity<ResponseDto<List<MajorDto>>>
     {
@@ -28,6 +32,11 @@ class MajorsApi @Autowired constructor(private val majorsBl: MajorsBl) {
         logger.info("Finishing the API call to find all majors")
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
+
+    /**
+     * This method is used to find all majors by campus id, no role is required
+     * @return ResponseDto<List<MajorDto>>
+     */
 
     @GetMapping("/campus/{campusId}")
     fun findByCampusId(@PathVariable campusId: Long): ResponseEntity<ResponseDto<List<MajorDto>>>

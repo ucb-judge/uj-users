@@ -19,8 +19,9 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         private val logger = LoggerFactory.getLogger(UsersApi::class.java.name)
     }
 
+// Get all users related methods
     /**
-     * This method is used to find all users
+     * This method is used to find all users, uj-users-access role is required
      * @return ResponseDto<List<KeycloakUserDto>>
      */
     @GetMapping()
@@ -32,26 +33,52 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to find user by username
-     * @param username
-     * @return ResponseDto<KeycloakUserDto>
+     * This method is used to find all users by group, uj-users-access role is required
+     * @param groupName
+     * @return ResponseDto<List<KeycloakUserDto>>
      */
-
-    @GetMapping("/profile/username/{username}")
-    fun findByUsername(@PathVariable username: String): ResponseEntity<ResponseDto<KeycloakUserDto>> {
-        logger.info("Starting the API call to find user by id")
-        val result: KeycloakUserDto = usersBl.findByUsername(username)
-        logger.info("Finishing the API call to find user by id")
+    @GetMapping("/group/{groupName}")
+    fun findAllByGroupName(@PathVariable groupName: String): ResponseEntity<ResponseDto<List<KeycloakUserDto>>> {
+        logger.info("Starting the API call to find all users by group")
+        val result: List<KeycloakUserDto> = usersBl.findByGroup(groupName)
+        logger.info("Finishing the API call to find all users by group")
         return ResponseEntity.ok(ResponseDto(result, "", true))
     }
 
+// Create user related methods
     /**
-     * This method is used to find user by id
+     * This method is used to create a student user, no role is required
+     * @param userDto
+     * @return ResponseDto<String>
+     */
+    @PostMapping("/student")
+    fun createStudent(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<String>> {
+        logger.info("Starting the API call to create student user")
+        usersBl.createUser(userDto,"students")
+        logger.info("Finishing the API call to create student user")
+        return ResponseEntity.ok(ResponseDto("Student user created successfully", "", true))
+    }
+    /**
+     * This method is used to create a professor user, uj-users-access role is required
+     * @param userDto
+     * @return ResponseDto<String>
+     */
+    @PostMapping("/professor")
+    fun createProfessor(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<String>> {
+        logger.info("Starting the API call to create professor user")
+        usersBl.createUser(userDto,"professors")
+        logger.info("Finishing the API call to create professor user")
+        return ResponseEntity.ok(ResponseDto("Professor user created successfully", "", true))
+    }
+
+// CRUD profile related methods
+    /**
+     * This method is used to find user by id, common-user role or uj-users-access role is required
      * @param userId
      * @return ResponseDto<KeycloakUserDto>
      */
     @GetMapping("/profile/{userId}")
-    fun findById(@PathVariable userId: String): ResponseEntity<ResponseDto<KeycloakUserDto>> {
+    fun findByByKcUuid(@PathVariable userId: String): ResponseEntity<ResponseDto<KeycloakUserDto>> {
         logger.info("Starting the API call to find user by id")
         val result: KeycloakUserDto = usersBl.findById(userId)
         logger.info("Finishing the API call to find user by id")
@@ -59,7 +86,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to update user info, is expected that token is sent in the header
+     * This method is used to update user info, is expected that token is sent in the header, common-user role or uj-users-access role is required
      * @param userDto
      * @return ResponseDto<KeycloakUserDto>
      */
@@ -72,7 +99,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to update user password, is expected that token is sent in the header
+     * This method is used to update user password, is expected that token is sent in the header, common-user role or uj-users-access role is required
      * @param userDto
      * @return ResponseDto<String>
      */
@@ -85,7 +112,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to delete a user, is expected that token is sent in the header
+     * This method is used to delete a user, is expected that token is sent in the header, common-user role or uj-users-access role is required
      * @return ResponseDto<String>
      */
     @DeleteMapping("/profile")
@@ -95,48 +122,10 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
         return ResponseEntity.ok(ResponseDto("User deleted","", true))
     }
 
-    /**
-        * This method is used to create a student user
-        * @param userDto
-        * @return ResponseDto<String>
-     */
-    @PostMapping("/student")
-    fun createStudent(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<String>> {
-        logger.info("Starting the API call to create student user")
-        usersBl.createUser(userDto,"students")
-        logger.info("Finishing the API call to create student user")
-        return ResponseEntity.ok(ResponseDto("Student user created successfully", "", true))
-    }
-
-    /**
-        * This method is used to create a professor user
-        * @param userDto
-        * @return ResponseDto<String>
-     */
-    @PostMapping("/professor")
-    fun createProfessor(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<String>> {
-        logger.info("Starting the API call to create student user")
-        usersBl.createUser(userDto,"professors")
-        logger.info("Finishing the API call to create student user")
-        return ResponseEntity.ok(ResponseDto("Professor user created successfully", "", true))
-    }
 
 
     /**
-     * This method is used to find all users by group
-     * @param groupName
-     * @return ResponseDto<List<KeycloakUserDto>>
-     */
-    @GetMapping("/group/{groupName}")
-    fun findByGroup(@PathVariable groupName: String): ResponseEntity<ResponseDto<List<KeycloakUserDto>>> {
-        logger.info("Starting the API call to find all users by group")
-        val result: List<KeycloakUserDto> = usersBl.findByGroup(groupName)
-        logger.info("Finishing the API call to find all users by group")
-        return ResponseEntity.ok(ResponseDto(result, "", true))
-    }
-
-    /**
-     * This method is used to check if a professor exists.
+     * This method is used to check if a professor exists, uj-users-access role is required
      * @param kcUuid professor's keycloak uuid
      * @return ResponseDto<Boolean>
      */
@@ -151,7 +140,7 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
     }
 
     /**
-     * This method is used to check if a student exists.
+     * This method is used to check if a student exists, uj-users-access role is required
      * @param kcUuid student's keycloak uuid
      * @return ResponseDto<Boolean>
      */

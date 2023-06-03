@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -31,28 +31,49 @@ keycloak:
   auth-server-url: ${KEYCLOAK_SERVER_URI:http://localhost:8090}
   autodetect-bearer-only: true
   credentials:
-    secret: ${KEYCLOAK_CLIENT_SECRET:SH6XfTUQkphfEQdfiAmML1bNkE0Gq615}
+    secret: ${KEYCLOAK_CLIENT_SECRET:u7EKAhVj9COtvqByeUhCZsQIZQyn8t6s}
   realm: ${KEYCLOAK_REALM:ucb-judge}
-  resource: ${KEYCLOAK_CLIENT_ID:backend}
+  resource: ${KEYCLOAK_CLIENT_ID:uj-users}
   ssl-required: none
   use-resource-role-mappings: false
   security-constraints:
     - auth-roles:
-        - uj-users-access
-        - common_user
+          - uj-users-access
       security-collections:
-        - name: account-settings
+        - name: Find users related methods
+          patterns:
+            - /api/v1/users
+            - /api/v1/users/group/*
+          methods:
+            - GET
+
+    - auth-roles:
+        - uj-users-access
+      security-collections:
+        - name: Professor Creation
+          patterns:
+            - /api/v1/users/professor
+          methods:
+            - POST
+
+    - auth-roles:
+        - common_user
+        - uj-users-access
+      security-collections:
+        - name: Profile CRUD operations
           patterns:
             - /api/v1/users/profile/*
           omitted-methods:
             - OPTIONS
+
     - auth-roles:
-        - professor_user
+        - uj-users-access
       security-collections:
-        - name: professor-settings
+        - name: User existence
           patterns:
-            - /api/v1/users
-            - /api/v1/users/professor
-            - /api/v1/users/group/*
-          omitted-methods:
-            - OPTIONS
+            - /api/v1/users/professors
+            - /api/v1/users/students
+          methods:
+            - GET
+
+frontend-client-id: ${FRONTEND_KEYCLOAK_CLIENT_ID:uj-frontend}

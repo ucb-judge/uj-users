@@ -42,6 +42,9 @@ class UsersBl @Autowired constructor(
     @Value("\${keycloak.realm}")
     private val realm: String? = null
 
+    @Value("\${frontend-client-id}")
+    private val frontendClientId: String? = null
+
     fun findAllUsers(): List<KeycloakUserDto> {
         logger.info("Starting the BL call to find all users")
         val users: List<UserRepresentation> = keycloak
@@ -51,21 +54,6 @@ class UsersBl @Autowired constructor(
         logger.info("Found ${users.size} users")
         logger.info("Finishing the BL call to find all users")
         return users.map { convertToUserDto(it) }
-    }
-
-    fun findByUsername(username: String): KeycloakUserDto {
-        logger.info("Starting the BL call to find user by username")
-        val user: List<UserRepresentation> = keycloak
-                .realm(realm)
-                .users()
-                .search(username)
-
-        if (user.isEmpty()) {
-            logger.error("User with username $username not found")
-            throw UsersException(HttpStatus.NOT_FOUND, "User with username $username not found")
-        }
-        logger.info("Finishing the BL call to find user by username")
-        return convertToUserDto(user[0])
     }
 
     fun findById(id: String): KeycloakUserDto {
@@ -86,7 +74,8 @@ class UsersBl @Autowired constructor(
         if (groupName=="students" && userDto.campusMajorId==null) {
             throw UsersException(HttpStatus.BAD_REQUEST, "CampusMajorId is required")
         }
-        val campusMajor = campusMajorRepository.findById(userDto.campusMajorId!!).orElseThrow { UjNotFoundException("CampusMajor with id ${userDto.campusMajorId} not found") }
+        val campusMajor = if (groupName=="students") campusMajorRepository.findById(userDto.campusMajorId!!).orElseThrow { UjNotFoundException("CampusMajor with id ${userDto.campusMajorId} not found") }
+        else null
 
         val passwordRepresentation = preparePasswordRepresentation(userDto.password)
         val userRepresentation = prepareUserRepresentation(userDto, passwordRepresentation, groupName)
@@ -128,8 +117,10 @@ class UsersBl @Autowired constructor(
         user.email = userDto.email ?: user.email
         user.firstName = userDto.firstName ?: user.firstName
         user.lastName = userDto.lastName ?: user.lastName
+        user.isEmailVerified = false
         // Verify email
         if (userDto.email != null) {
+            logger.info("Sending email verification to ${userDto.email}")
             user.requiredActions = listOf("VERIFY_EMAIL")
         }
         keycloak
@@ -167,10 +158,26 @@ class UsersBl @Autowired constructor(
             throw UsersException(HttpStatus.BAD_REQUEST, "Current password is required")
         }
         checkCurrentPassword(userDto.currentPassword)
+//        Physically delete user from keycloak
+//        keycloak
+//            .realm(realm)
+//            .users()
+//            .delete(userId)
+
+//        Soft delete user from keycloak
+        val user: UserRepresentation = keycloak
+            .realm(realm)
+            .users()
+            .get(userId)
+            .toRepresentation()
+
+        user.isEnabled = false
         keycloak
             .realm(realm)
             .users()
-            .delete(userId)
+            .get(userId)
+            .update(user)
+
         logger.info("User with id $userId deleted from keycloak")
         logger.info("Deleting user from database")
         val student = studentRepository.findByKcUuidAndStatusIsTrue(userId)
@@ -199,7 +206,7 @@ class UsersBl @Autowired constructor(
             .grantType(PASSWORD)
             .serverUrl(authUrl)
             .realm(realm)
-            .clientId("frontend")
+            .clientId(frontendClientId)
             .username(username)
             .password(currentPassword)
             .build()
@@ -240,7 +247,7 @@ class UsersBl @Autowired constructor(
             userRepresentation.isEmailVerified,
             userRepresentation.firstName,
             userRepresentation.lastName,
-            userRepresentation.email,
+            userRepresentation.email?: "",
         )
     }
 
