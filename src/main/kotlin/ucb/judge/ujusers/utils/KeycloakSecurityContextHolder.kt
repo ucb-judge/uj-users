@@ -16,6 +16,10 @@ class KeycloakSecurityContextHolder {
             return getKeycloakSecurityContext()?.token?.subject
         }
 
+        fun getUsername() : String? {
+            return getKeycloakSecurityContext()?.token?.preferredUsername
+        }
+
         fun getEmail() : String? {
             return getKeycloakSecurityContext()?.token?.email
         }

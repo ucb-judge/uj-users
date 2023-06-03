@@ -15,7 +15,7 @@ import ucb.judge.ujusers.dto.ResponseDto
 
 @Service
 @RestController
-@RequestMapping("/api/v1/campus-majors")
+@RequestMapping("/api/v1/campuses-majors")
 class CampusMajorApi @Autowired constructor(private val campusMajorBl: CampusMajorBl) {
 
     companion object {

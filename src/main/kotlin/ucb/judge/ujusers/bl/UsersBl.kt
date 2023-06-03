@@ -1,7 +1,8 @@
 package ucb.judge.ujusers.bl
 
-
+import org.keycloak.OAuth2Constants.PASSWORD
 import org.keycloak.admin.client.Keycloak
+import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.UserRepresentation
@@ -34,6 +35,9 @@ class UsersBl @Autowired constructor(
     companion object {
         private val logger = LoggerFactory.getLogger(UsersBl::class.java.name)
     }
+
+    @Value("\${keycloak.auth-server-url}")
+    private val authUrl: String? = null
 
     @Value("\${keycloak.realm}")
     private val realm: String? = null
@@ -139,6 +143,10 @@ class UsersBl @Autowired constructor(
 
     fun updatePassword(userDto: UserDto) {
         logger.info("Starting the BL call to reset user password")
+        if (userDto.currentPassword == null) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Current password is required")
+        }
+        checkCurrentPassword(userDto.currentPassword)
         val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "User id is required")
         val credentialRepresentation = CredentialRepresentation()
         credentialRepresentation.isTemporary = false
@@ -152,27 +160,18 @@ class UsersBl @Autowired constructor(
         logger.info("Finishing the BL call to reset user password")
     }
 
-    fun delete() {
+    fun delete(userDto: UserDto) {
         logger.info("Starting the BL call to delete user")
         val userId = KeycloakSecurityContextHolder.getSubject() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "User id is required")
-//        FIXME: CHANGE FOR LOGICAL DELETE
+        if (userDto.currentPassword == null) {
+            throw UsersException(HttpStatus.BAD_REQUEST, "Current password is required")
+        }
+        checkCurrentPassword(userDto.currentPassword)
         keycloak
             .realm(realm)
             .users()
             .delete(userId)
-//        val user: UserRepresentation = keycloak
-//            .realm(realm)
-//            .users()
-//            .get(userId)
-//            .toRepresentation()
-//        println(user.toString())
-//        user.isEnabled = false
-//        keycloak
-//            .realm(realm)
-//            .users()
-//            .get(userId)
-//            .update(user)
-        // Delete user from database
+        logger.info("User with id $userId deleted from keycloak")
         logger.info("Deleting user from database")
         val student = studentRepository.findByKcUuidAndStatusIsTrue(userId)
         student?.let {
@@ -191,6 +190,22 @@ class UsersBl @Autowired constructor(
             logger.info("User with id ${professor.kcUuid} deleted from database")
         }
         logger.info("Finishing the BL call to delete user")
+    }
+
+    fun checkCurrentPassword(currentPassword: String) {
+        logger.info("Starting the BL call to check current password")
+        val username = KeycloakSecurityContextHolder.getUsername() ?: throw UsersException(HttpStatus.UNAUTHORIZED, "Username is required")
+        val keycloak: Keycloak = KeycloakBuilder.builder()
+            .grantType(PASSWORD)
+            .serverUrl(authUrl)
+            .realm(realm)
+            .clientId("frontend")
+            .username(username)
+            .password(currentPassword)
+            .build()
+        keycloak.tokenManager().accessToken
+        logger.info("Current password is correct")
+        logger.info("Finishing the BL call to check current password")
     }
 
 

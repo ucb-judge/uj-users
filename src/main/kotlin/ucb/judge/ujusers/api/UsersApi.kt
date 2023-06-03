@@ -89,8 +89,8 @@ class UsersApi @Autowired constructor(private val usersBl: UsersBl) {
      * @return ResponseDto<String>
      */
     @DeleteMapping("/profile")
-    fun delete(): ResponseEntity<ResponseDto<String>> {
-        usersBl.delete()
+    fun delete(@RequestBody userDto: UserDto): ResponseEntity<ResponseDto<String>> {
+        usersBl.delete(userDto)
         logger.info("Finishing the API call to delete user")
         return ResponseEntity.ok(ResponseDto("User deleted","", true))
     }
