@@ -117,8 +117,9 @@ class UsersBl @Autowired constructor(
         user.firstName = userDto.firstName ?: user.firstName
         user.lastName = userDto.lastName ?: user.lastName
         user.isEmailVerified = false
+
         // Verify email
-        if (userDto.email != null) {
+        if (userDto.email != null && userDto.email != user.email) {
             logger.info("Sending email verification to ${userDto.email}")
             user.requiredActions = listOf("VERIFY_EMAIL")
         }
