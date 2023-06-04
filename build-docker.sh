@@ -12,11 +12,11 @@ echo "####################"
 echo "Building docker image"
 echo "####################"
 
-echo -n "Docker container name (ucb-judge-users): "
+echo -n "Docker container name (uj-users): "
 read container_name
 
 if [ -z "$container_name" ]; then
-    container_name="ucb-judge-users"
+    container_name="uj-users"
 fi
 
 while [[ -z "$version_tag" ]]; do
