@@ -6,12 +6,6 @@ spring:
     name: uj-users
   zipkin:
     base-url: ${ZIPKIN_SERVER_URI:http://localhost:9411}
-  rabbitmq:
-    host: ${RABBITMQ_HOST:sparrow-01.rmq.cloudamqp.com}
-    port: 5672
-    username: ${RABBITMQ_USERNAME:itggwiot}
-    password: ${RABBITMQ_PASSWORD:FNAc7QotPFaC73UICw8YedtO6GVSspwD}
-    virtual-host: ${RABBITMQ_VIRTUAL_HOST:itggwiot}
   datasource:
     type: org.postgresql.jdbc2.optional.SimpleDataSource
     username: ${POSTGRES_USERNAME:postgres}
@@ -49,6 +43,7 @@ keycloak:
 
     - auth-roles:
         - uj-users-access
+        - professor
       security-collections:
         - name: Professor Creation
           patterns:
@@ -57,7 +52,7 @@ keycloak:
             - POST
 
     - auth-roles:
-        - common_user
+        - common-user
         - uj-users-access
       security-collections:
         - name: Profile CRUD operations

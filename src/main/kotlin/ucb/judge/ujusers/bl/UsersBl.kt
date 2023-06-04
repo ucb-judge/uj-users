@@ -79,7 +79,6 @@ class UsersBl @Autowired constructor(
 
         val passwordRepresentation = preparePasswordRepresentation(userDto.password)
         val userRepresentation = prepareUserRepresentation(userDto, passwordRepresentation, groupName)
-        validatePasswordPolicy(userDto.password)
 
         val response:Response = keycloak
             .realm(realm)
