@@ -21,7 +21,7 @@ class CampusMajorBl @Autowired constructor(
 
     fun findAllByCampusId(campusId: Long): List<CampusMajorDto> {
         logger.info("Starting the BL call to find all majors by campus id")
-        val campusMajors: List<CampusMajor> = campusMajorRepository.findAllByCampusCampusIdAndStatusIsTrue(campusId)
+        val campusMajors: List<CampusMajor> = campusMajorRepository.findAllByCampusCampusIdAndStatusIsTrueOrderByCampusAsc(campusId)
         if (campusMajors.isEmpty()) {
             throw UjNotFoundException("Campus with id $campusId not found")
         }
@@ -34,7 +34,7 @@ class CampusMajorBl @Autowired constructor(
         val student = studentRepository.findByKcUuidAndStatusIsTrue(kcUuid)
             ?: throw UjNotFoundException("Student with kcUuid $kcUuid not found")
 
-        val campusMajor: CampusMajor = campusMajorRepository.findByCampusMajorIdAndStatusIsTrue(student.campusMajor!!.campusMajorId)
+        val campusMajor: CampusMajor = campusMajorRepository.findByCampusMajorIdAndStatusIsTrueOrderByMajorNameAsc(student.campusMajor!!.campusMajorId)
             ?: throw UjNotFoundException("CampusMajor with id ${student.campusMajor!!.campusMajorId} not found")
         logger.info("Found campus and major from kcUuid")
         return CampusMajorMapper.entityToDto(campusMajor)
